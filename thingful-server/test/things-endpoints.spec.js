@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 'use strict';
 
 const knex = require('knex');
@@ -9,10 +10,10 @@ describe('Things Endpoints', function() {
 
   const { testUsers, testThings, testReviews } = helpers.makeThingsFixtures();
 
-  function makeAuthHeader(user) {
-    const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64');
-    return `Bearer ${token}`;
-  }
+  // function makeAuthHeader(user) {
+  //   const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64');
+  //   return `Bearer ${token}`;
+  // }
 
   before('make knex instance', () => {
     db = knex({
@@ -77,11 +78,11 @@ describe('Things Endpoints', function() {
         );
         return supertest(app)
           .get('/api/things')
-          .expect(200)
-          // .expect(res => {
-          //   expect(res.body[0].title).to.eql(expectedThings.title);
-          //   expect(res.body[0].content).to.eql(expectedThings.content);
-          // });
+          .expect(200);
+        // .expect(res => {
+        //   expect(res.body[0].title).to.eql(expectedThings.title);
+        //   expect(res.body[0].content).to.eql(expectedThings.content);
+        // });
       });
     });
 
@@ -141,59 +142,59 @@ describe('Things Endpoints', function() {
             expect(res.body.title).to.eql(expectedThing.title);
             expect(res.body.content).to.eql(expectedThing.content);
           });
-    });
-
-    context('Given an XSS attack thing', () => {
-      const testUser = helpers.makeUsersArray()[1];
-      const { maliciousThing, expectedThing } = helpers.makeMaliciousThing(
-        testUser
-      );
-
-      beforeEach('insert malicious thing', () => {
-        return helpers.seedMaliciousThing(db, testUser, maliciousThing);
       });
 
-      it.skip('removes XSS attack content', () => {
-        return supertest(app)
-          .get(`/api/things/${maliciousThing.id}`)
-          .set('Authorization', helpers.makeAuthHeader(testUser, process.env.JWT_SECRET))
-          .expect(200)
-          .expect(res => {
-            expect(res.body.title).to.eql(expectedThing.title);
-            expect(res.body.content).to.eql(expectedThing.content);
-          });
-      });
-    });
-  });
-
-  describe('GET /api/things/:thing_id/reviews', () => {
-    context('Given no things', () => {
-      it('responds with 404', () => {
-        const thingId = 123456;
-        return supertest(app)
-          .get(`/api/things/${thingId}/reviews`)
-          .expect(404, { error: 'Thing doesn\'t exist' });
-      });
-    });
-
-    context('Given there are reviews for thing in the database', () => {
-      beforeEach('insert things', () =>
-        helpers.seedThingsTables(db, testUsers, testThings, testReviews)
-      );
-
-      it('responds with 200 and the specified reviews', () => {
-        const thingId = 1;
-        const expectedReviews = helpers.makeExpectedThingReviews(
-          testUsers,
-          thingId,
-          testReviews
+      context('Given an XSS attack thing', () => {
+        const testUser = helpers.makeUsersArray()[1];
+        const { maliciousThing, expectedThing } = helpers.makeMaliciousThing(
+          testUser
         );
 
-        return supertest(app)
-          .get(`/api/things/${thingId}/reviews`)
-          .set('Authorization', helpers.makeAuthHeader(testUsers[0], process.env.JWT_SECRET))
-          .expect(200);
+        beforeEach('insert malicious thing', () => {
+          return helpers.seedMaliciousThing(db, testUser, maliciousThing);
+        });
+
+        it.skip('removes XSS attack content', () => {
+          return supertest(app)
+            .get(`/api/things/${maliciousThing.id}`)
+            .set('Authorization', helpers.makeAuthHeader(testUser, process.env.JWT_SECRET))
+            .expect(200)
+            .expect(res => {
+              expect(res.body.title).to.eql(expectedThing.title);
+              expect(res.body.content).to.eql(expectedThing.content);
+            });
+        });
       });
     });
-  });
-})});
+
+    describe('GET /api/things/:thing_id/reviews', () => {
+      context('Given no things', () => {
+        it('responds with 404', () => {
+          const thingId = 123456;
+          return supertest(app)
+            .get(`/api/things/${thingId}/reviews`)
+            .expect(404, { error: 'Thing doesn\'t exist' });
+        });
+      });
+
+      context('Given there are reviews for thing in the database', () => {
+        beforeEach('insert things', () =>
+          helpers.seedThingsTables(db, testUsers, testThings, testReviews)
+        );
+
+        it('responds with 200 and the specified reviews', () => {
+          const thingId = 1;
+          const expectedReviews = helpers.makeExpectedThingReviews(
+            testUsers,
+            thingId,
+            testReviews
+          );
+
+          return supertest(app)
+            .get(`/api/things/${thingId}/reviews`)
+            .set('Authorization', helpers.makeAuthHeader(testUsers[0], process.env.JWT_SECRET))
+            .expect(200);
+        });
+      });
+    });
+  });});
