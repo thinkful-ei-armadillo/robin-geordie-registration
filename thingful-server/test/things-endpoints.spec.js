@@ -78,11 +78,16 @@ describe('Things Endpoints', function() {
         );
         return supertest(app)
           .get('/api/things')
-          .expect(200);
-        // .expect(res => {
-        //   expect(res.body[0].title).to.eql(expectedThings.title);
-        //   expect(res.body[0].content).to.eql(expectedThings.content);
-        // });
+          .expect(200)
+          .expect(res => {
+            expect(res.body[0].id).to.eql(expectedThings[0].id);
+            expect(res.body[0].title).to.eql(expectedThings[0].title);
+            expect(res.body[0].content).to.eql(expectedThings[0].content);
+            expect(res.body[0].image).to.eql(expectedThings[0].image);
+            const expectedDate = new Date(expectedThings[0].date_created).toLocaleString('en', {timeZone:'UTC'});
+            const actualDate = new Date(res.body[0].date_created).toLocaleString();
+            expect(actualDate).to.eql(expectedDate);
+          });
       });
     });
 
@@ -189,11 +194,21 @@ describe('Things Endpoints', function() {
             thingId,
             testReviews
           );
+        
 
           return supertest(app)
             .get(`/api/things/${thingId}/reviews`)
             .set('Authorization', helpers.makeAuthHeader(testUsers[0], process.env.JWT_SECRET))
-            .expect(200);
+            .expect(200)
+            .expect(res => {
+              expect(res.body[0].id).to.eql(expectedReviews[0].id);
+              expect(res.body[0].text).to.eql(expectedReviews[0].text);
+              expect(res.body[0].rating).to.eql(expectedReviews[0].rating);
+              // expect(res.body[0].user).to.eql(expectedReviews[0].user);
+              const expectedDate = new Date(expectedReviews[0].date_created).toLocaleString('en', {timeZone:'UTC'});
+              const actualDate = new Date(res.body[0].date_created).toLocaleString();
+              expect(actualDate).to.eql(expectedDate);
+            });
         });
       });
     });
